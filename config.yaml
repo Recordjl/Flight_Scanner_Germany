@@ -2,10 +2,10 @@
 trip:
   origin: CVG
   destinations: [MUC, STR]
-  depart_start: 2027-09-10
-  depart_end: 2027-10-01
-  min_nights: 5
-  max_nights: 21
+  depart_start: 2027-09-16
+  depart_end: 2027-09-29
+  min_nights: 10
+  max_nights: 14
 
 passengers:
   adults: 2
@@ -40,7 +40,7 @@ cash:
   # SerpAPI free tier = 250 searches/month. Each date pair costs 3 searches
   # (1 adult business, 1 adult + child economy, 2 adults + child economy).
   date_pairs_per_run: 2
-  rotation_nights: [7, 10, 14]
+  rotation_nights: [10, 12, 14]
   # Google Flights only returns fares once the RETURN date is inside the airline schedule.
   # Searches beyond this many days out are skipped (empty results may still be billed).
   horizon_days: 330
