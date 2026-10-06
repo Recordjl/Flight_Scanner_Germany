@@ -1,0 +1,40 @@
+name: Daily flight scan
+
+on:
+  schedule:
+    - cron: "17 11 * * *"   # 11:17 UTC = 7:17 AM Eastern (6:17 in winter)
+  workflow_dispatch: {}
+
+permissions:
+  contents: write   # commit price history back to the repo
+
+concurrency:
+  group: daily-scan
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Scan
+        env:
+          SEATS_AERO_KEY: ${{ secrets.SEATS_AERO_KEY }}
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          NTFY_TOKEN: ${{ secrets.NTFY_TOKEN }}
+        run: python -m scanner.main
+      - name: Save price history
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/history.sqlite
+          git diff --cached --quiet || git commit -m "Price history $(date -u +%F)"
+          git push
