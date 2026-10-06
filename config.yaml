@@ -48,7 +48,9 @@ cash:
 reddit:
   # Public RSS feeds (Reddit no longer self-serves API apps). Skipped quietly if blocked.
   subreddits: [awardtravel, churning, delta, flights]
-  keywords: [MUC, Munich, STR, Stuttgart, Germany, Frankfurt, Lufthansa, "Delta One",
-             "Flying Blue", "Promo Rewards", Oktoberfest]
+  # A post must mention at least one place; topics are shown alongside but never match alone.
+  places: [MUC, Munich, München, STR, Stuttgart, Germany, Frankfurt, FRA, Zurich, Oktoberfest, Bavaria]
+  topics: [Lufthansa, "Delta One", "Flying Blue", "Promo Rewards", Aeroplan, "Virgin Atlantic",
+           "Premium Select", business, saver]
   lookback_hours: 26
   seconds_between_requests: 30

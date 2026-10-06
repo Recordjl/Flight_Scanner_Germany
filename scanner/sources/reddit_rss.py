@@ -22,7 +22,7 @@ def scan(cfg, now=None):
     rc = cfg["reddit"]
     now = now or datetime.now(timezone.utc)
     cutoff = now - timedelta(hours=rc["lookback_hours"])
-    patterns = [(k, re.compile(rf"\b{re.escape(k)}\b", re.I)) for k in rc["keywords"]]
+    places, topics = _patterns(rc["places"]), _patterns(rc.get("topics", []))
     posts = []
     for i, sub in enumerate(rc["subreddits"]):
         if i:
@@ -39,11 +39,15 @@ def scan(cfg, now=None):
         if not r.ok:
             log.info("reddit r/%s returned HTTP %s", sub, r.status_code)
             continue
-        posts.extend(_parse(r.content, sub, cutoff, patterns))
+        posts.extend(_parse(r.content, sub, cutoff, places, topics))
     return posts
 
 
-def _parse(xml_bytes, sub, cutoff, patterns):
+def _patterns(words):
+    return [(w, re.compile(rf"\b{re.escape(w)}\b", re.I)) for w in words]
+
+
+def _parse(xml_bytes, sub, cutoff, places, topics=()):
     try:
         root = ET.fromstring(xml_bytes)
     except ET.ParseError:
@@ -61,8 +65,10 @@ def _parse(xml_bytes, sub, cutoff, patterns):
         if when < cutoff:
             continue
         text = f"{title} {re.sub('<[^>]+>', ' ', body)}"
-        matched = [k for k, p in patterns if p.search(text)]
-        if matched and link is not None:
-            out.append(Chatter(title=title, url=link.get("href", ""), subreddit=sub,
-                               created_utc=when.timestamp(), matched=matched))
+        where = [k for k, p in places if p.search(text)]
+        if not where or link is None:
+            continue
+        matched = where + [k for k, p in topics if p.search(text)]
+        out.append(Chatter(title=title, url=link.get("href", ""), subreddit=sub,
+                           created_utc=when.timestamp(), matched=matched))
     return out

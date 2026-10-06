@@ -42,6 +42,9 @@ RSS = b"""<?xml version="1.0"?><feed xmlns="http://www.w3.org/2005/Atom">
 <entry><title>Flying Blue promo to Munich for Oktoberfest</title>
 <link href="https://www.reddit.com/r/awardtravel/comments/abc/"/>
 <updated>2026-10-05T12:00:00+00:00</updated><content>great deal</content></entry>
+<entry><title>SLC - CDG with 2 toddlers in Delta One</title>
+<link href="https://www.reddit.com/r/delta/comments/ghi/"/>
+<updated>2026-10-05T12:00:00+00:00</updated><content>bassinet?</content></entry>
 <entry><title>Hawaii question</title><link href="https://www.reddit.com/r/awardtravel/comments/def/"/>
 <updated>2026-10-05T12:00:00+00:00</updated><content>nothing</content></entry>
 </feed>"""
@@ -115,10 +118,12 @@ class Evaluate(unittest.TestCase):
 
 
 class Reddit(unittest.TestCase):
-    def test_keyword_match(self):
+    def test_place_required_topic_alone_ignored(self):
+        rc = CFG["reddit"]
         posts = reddit_rss._parse(RSS, "awardtravel", datetime(2026, 10, 5, tzinfo=timezone.utc),
-                                  [(k, __import__("re").compile(rf"\b{k}\b", 2)) for k in ["Munich"]])
+                                  reddit_rss._patterns(rc["places"]), reddit_rss._patterns(rc["topics"]))
         self.assertEqual([p.title for p in posts], ["Flying Blue promo to Munich for Oktoberfest"])
+        self.assertEqual(posts[0].matched, ["Munich", "Oktoberfest", "Flying Blue"])
 
 
 if __name__ == "__main__":
